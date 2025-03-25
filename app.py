@@ -72,7 +72,7 @@ if st.button("Generate Tactics Plan"):
                         You are a pharmaceutical marketing strategist. Write a short 3-4 sentence rationale describing why the following tactic: '{tactic}' aligns with the selected strategic imperative: '{si}', the differentiator(s): {', '.join(selected_diff)}, and the tone(s): {', '.join(selected_tone)}.
                         """
                         try:
-                            response = openai.ChatCompletion.create(
+                            response = openai.chat.completions.create(
                                 model="gpt-4",
                                 messages=[{"role": "user", "content": prompt}],
                                 temperature=0.6
@@ -81,8 +81,23 @@ if st.button("Generate Tactics Plan"):
                         except Exception as e:
                             desc = f"AI description not available: {e}"
 
-                        est_time = "4–6 weeks"
-                        est_cost = "$15,000–$25,000"
+                                                # Generate estimates for time and cost
+                        estimate_prompt = f"Estimate the typical time and cost for executing this pharma marketing tactic: '{tactic}'. Provide a 1-line answer like 'Timeline: 6–8 weeks, Cost: $20,000–$35,000'."
+
+                        try:
+                            est_response = openai.chat.completions.create(
+                                model="gpt-4",
+                                messages=[{"role": "user", "content": estimate_prompt}],
+                                temperature=0.5
+                            )
+                            estimate = est_response.choices[0].message.content.strip()
+                            est_time, est_cost = estimate.split(", ")
+                            est_time = est_time.replace("Timeline: ", "")
+                            est_cost = est_cost.replace("Cost: ", "")
+                        except Exception as e:
+                            est_time = "TBD"
+                            est_cost = f"Estimation failed: {e}"
+
 
                         row_df = pd.DataFrame([{
                             "Strategic Imperative": si,
@@ -110,7 +125,7 @@ if st.button("Generate Tactics Plan"):
         generate 5 pharma marketing message ideas.
         """
         try:
-            response = openai.ChatCompletion.create(
+            response = openai.chat.completions.create(
                 model="gpt-4",
                 messages=[{"role": "user", "content": msg_prompt}],
                 temperature=0.7
@@ -126,7 +141,7 @@ if st.button("Generate Tactics Plan"):
     Create a pharma campaign concept with a headline and subhead. The strategy should include: {', '.join(selected_si)}. Emphasize the differentiator(s): {', '.join(selected_diff)} and tone: {', '.join(selected_tone)}.
     """
     try:
-        response2 = openai.ChatCompletion.create(
+        response2 = openai.chat.completions.create(
             model="gpt-4",
             messages=[{"role": "user", "content": concept_prompt}],
             temperature=0.7
