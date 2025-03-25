@@ -10,6 +10,22 @@ from openai import RateLimitError
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 st.set_page_config(page_title="Pharma Brand Planner", layout="wide")
 
+# === SAFE COMPLETION FUNCTION ===
+def safe_openai_chat_completion(prompt, model="gpt-4-1106-preview", fallback_model="gpt-3.5-turbo"):
+    models_to_try = [model, fallback_model]
+    for m in models_to_try:
+        try:
+            return openai.chat.completions.create(
+                model=m,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.6
+            )
+        except RateLimitError:
+            time.sleep(2)
+        except Exception:
+            continue
+    return None
+
 # === LOAD EXCEL FILE ===
 @st.cache_data
 def load_data():
@@ -22,26 +38,6 @@ def load_data():
     return tab1, tab2, tab3, tab4
 
 tab1, tab2, tab3, tab4 = load_data()
-
-
-
-def safe_openai_chat_completion(prompt, model="gpt-4-1106-preview", fallback_model="gpt-3.5-turbo"):
-    import time
-    from openai import RateLimitError
-
-    models_to_try = [model, fallback_model]
-    for m in models_to_try:
-        try:
-            return openai.chat.completions.create(
-                model=m,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.5
-            )
-        except RateLimitError:
-            time.sleep(2)
-        except Exception:
-            continue
-    return None
 
 # === STEP 1: Product Lifecycle ===
 st.sidebar.title("Brand Planning Tool")
@@ -90,27 +86,13 @@ if st.button("Generate Tactics Plan"):
                         if pd.isna(tactic):
                             continue
 
-                        prompt = f"""
-                        You are a pharmaceutical marketing strategist. Write a short 3-4 sentence rationale describing why the following tactic: '{tactic}' aligns with the selected strategic imperative: '{si}', the differentiator(s): {', '.join(selected_diff)}, and the tone(s): {', '.join(selected_tone)}.
-                        """
-                        try:
-                            response = openai.chat.completions.create(
-                                model="gpt-4",
-                                messages=[{"role": "user", "content": prompt}],
-                                temperature=0.6
-                            )
-                            desc = response['choices'][0]['message']['content']
-                        except Exception as e:
-                            desc = f"AI description not available: {e}"
+                        prompt = f"You are a pharmaceutical marketing strategist. Write a short 3-4 sentence rationale describing why the following tactic: '{tactic}' aligns with the selected strategic imperative: '{si}', the differentiator(s): {', '.join(selected_diff)}, and the tone(s): {', '.join(selected_tone)}."
+                        response = safe_openai_chat_completion(prompt)
+                        desc = response.choices[0].message.content.strip() if response else "AI description unavailable."
 
-                                                                                                                                                # Generate estimates for time and cost
                         estimate_prompt = f"Estimate the typical time and cost for executing this pharma marketing tactic: '{tactic}'. Provide a 1-line answer like 'Timeline: 6–8 weeks, Cost: $20,000–$35,000'."
-
                         est_response = safe_openai_chat_completion(estimate_prompt)
-                        if est_response is None:
-                            est_time = "Rate limited"
-                            est_cost = "Try again later"
-                        else:
+                        if est_response:
                             try:
                                 estimate = est_response.choices[0].message.content.strip()
                                 est_time, est_cost = estimate.split(", ")
@@ -119,17 +101,9 @@ if st.button("Generate Tactics Plan"):
                             except Exception as e:
                                 est_time = "TBD"
                                 est_cost = f"Estimation failed: {e}"
-
-
-
-                        except Exception as e:
-                            est_time = "TBD"
-                            est_cost = f"Estimation failed: {e}"
-
-                        except Exception as e:
-                            est_time = "TBD"
-                            est_cost = f"Estimation failed: {e}"
-
+                        else:
+                            est_time = "Rate limited"
+                            est_cost = "Try again later"
 
                         row_df = pd.DataFrame([{
                             "Strategic Imperative": si,
@@ -145,50 +119,30 @@ if st.button("Generate Tactics Plan"):
     else:
         st.dataframe(output_df)
 
-    # === STEP 7: Messaging Ideas ===
     st.subheader("5 Key Messaging Ideas")
     if not selected_si or not selected_diff or not selected_tone:
-        st.warning("Please make sure you've selected strategic imperatives, differentiators, and tone before generating messaging ideas.")
+        st.warning("Please select strategic imperatives, differentiators, and tone.")
     else:
-        msg_prompt = f"""
-        Based on the strategic imperatives: {', '.join(selected_si)},
-        product differentiators: {', '.join(selected_diff)},
-        and tone: {', '.join(selected_tone)},
-        generate 5 pharma marketing message ideas.
-        """
-        try:
-            response = openai.chat.completions.create(
-                model="gpt-4",
-                messages=[{"role": "user", "content": msg_prompt}],
-                temperature=0.7
-            )
-            ideas = response['choices'][0]['message']['content']
-            st.markdown(ideas)
-        except Exception as e:
-            st.error(f"Message generation failed: {e}")
+        msg_prompt = f"Based on the strategic imperatives: {', '.join(selected_si)}, product differentiators: {', '.join(selected_diff)}, and tone: {', '.join(selected_tone)}, generate 5 pharma marketing message ideas."
+        msg_response = safe_openai_chat_completion(msg_prompt)
+        if msg_response:
+            st.markdown(msg_response.choices[0].message.content.strip())
+        else:
+            st.error("Message generation failed.")
 
-    # === STEP 8: Campaign Concept ===
     st.subheader("Campaign Concept")
-    concept_prompt = f"""
-    Create a pharma campaign concept with a headline and subhead. The strategy should include: {', '.join(selected_si)}. Emphasize the differentiator(s): {', '.join(selected_diff)} and tone: {', '.join(selected_tone)}.
-    """
-    try:
-        response2 = openai.chat.completions.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": concept_prompt}],
-            temperature=0.7
-        )
-        st.markdown(response2['choices'][0]['message']['content'])
-    except Exception as e:
-        st.error(f"Campaign concept generation failed: {e}")
+    concept_prompt = f"Create a pharma campaign concept with a headline and subhead. The strategy should include: {', '.join(selected_si)}. Emphasize the differentiator(s): {', '.join(selected_diff)} and tone: {', '.join(selected_tone)}."
+    concept_response = safe_openai_chat_completion(concept_prompt)
+    if concept_response:
+        st.markdown(concept_response.choices[0].message.content.strip())
+    else:
+        st.error("Campaign concept generation failed.")
 
-    # === STEP 9: Competitive Intelligence ===
     st.subheader("Competitive Intelligence")
     drug_name = st.text_input("Enter your drug name to generate competitive insights:")
     if st.button("Get Competitive Insights"):
         search_url = f"https://www.google.com/search?q={drug_name}+site:drugs.com"
         st.info(f"Searching online for competitors to {drug_name}...")
-
         try:
             headers = {"User-Agent": "Mozilla/5.0"}
             res = requests.get(search_url, headers=headers)
