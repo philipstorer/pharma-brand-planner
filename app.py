@@ -103,7 +103,7 @@ if st.button("Generate Tactics Plan"):
                         except Exception as e:
                             desc = f"AI description not available: {e}"
 
-                                                                                                                        # Generate estimates for time and cost
+                                                                                                                                                # Generate estimates for time and cost
                         estimate_prompt = f"Estimate the typical time and cost for executing this pharma marketing tactic: '{tactic}'. Provide a 1-line answer like 'Timeline: 6–8 weeks, Cost: $20,000–$35,000'."
 
                         est_response = safe_openai_chat_completion(estimate_prompt)
@@ -119,6 +119,7 @@ if st.button("Generate Tactics Plan"):
                             except Exception as e:
                                 est_time = "TBD"
                                 est_cost = f"Estimation failed: {e}"
+
 
 
                         except Exception as e:
