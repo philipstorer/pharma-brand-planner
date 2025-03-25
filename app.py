@@ -11,7 +11,7 @@ openai.api_key = st.secrets["OPENAI_API_KEY"]
 st.set_page_config(page_title="Pharma Brand Planner", layout="wide")
 
 # === SAFE COMPLETION FUNCTION ===
-def safe_openai_chat_completion(prompt, model="gpt-4-1106-preview", fallback_model="gpt-3.5-turbo"):
+def safe_openai_chat_completion(prompt, model="gpt-3.5-turbo", fallback_model=None):
     models_to_try = [model, fallback_model]
     for m in models_to_try:
         try:
