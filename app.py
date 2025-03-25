@@ -24,6 +24,7 @@ def load_data():
 tab1, tab2, tab3, tab4 = load_data()
 
 
+
 def safe_openai_chat_completion(prompt, model="gpt-4-1106-preview", fallback_model="gpt-3.5-turbo"):
     import time
     from openai import RateLimitError
@@ -41,7 +42,6 @@ def safe_openai_chat_completion(prompt, model="gpt-4-1106-preview", fallback_mod
         except Exception:
             continue
     return None
-
 
 # === STEP 1: Product Lifecycle ===
 st.sidebar.title("Brand Planning Tool")
