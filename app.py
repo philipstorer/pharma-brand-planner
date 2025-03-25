@@ -84,9 +84,7 @@ for si in selected_si:
                         desc = f"AI description not available: {e}"
 
                     est_time = "4–6 weeks"
-                    est_cost = "$15,000–$25,000"
-
-                                    row_df = pd.DataFrame([{
+                    est_cost = "$15,000–$25,000"                    row_df = pd.DataFrame([{
                         "Strategic Imperative": si,
                         "Tactic": tactic,
                         "AI Description": desc,
@@ -113,9 +111,7 @@ for si in selected_si:
                     desc = f"AI description not available: {e}"
 
                 est_time = "4–6 weeks"
-                est_cost = "$15,000–$25,000"
-
-                                row_df = pd.DataFrame([{
+                est_cost = "$15,000–$25,000"                    row_df = pd.DataFrame([{
                         "Strategic Imperative": si,
                         "Tactic": tactic,
                         "AI Description": desc,
