@@ -57,7 +57,8 @@ if st.button("Generate Tactics Plan"):
     st.subheader("Tactics Aligned to Your Strategic Imperatives")
     output_df = pd.DataFrame()
 
-    for si in selected_si:
+    
+for si in selected_si:
     matches = tab4[tab4['Strategic Challenge'] == si]
     if not matches.empty:
         for obj in selected_objectives:
@@ -94,6 +95,7 @@ if st.button("Generate Tactics Plan"):
                             "Est. Cost": est_cost
                         }])
                     ])
+
                 if pd.isna(tactic):
                     continue
 
