@@ -56,6 +56,7 @@ selected_objectives = st.multiselect("Select your strategic objectives:", object
 if st.button("Generate Tactics Plan"):
     st.subheader("Tactics Aligned to Your Strategic Imperatives")
     output_df = pd.DataFrame()
+    output_df = pd.DataFrame()
 
     
 for si in selected_si:
@@ -127,7 +128,10 @@ for si in selected_si:
                     }])
                 ])
 
-    st.dataframe(output_df)
+    if output_df.empty:
+        st.warning("No tactics were found based on your selected imperatives and objectives.")
+    else:
+        st.dataframe(output_df)
 
     # === STEP 7: Messaging Ideas ===
     st.subheader("5 Key Messaging Ideas")
