@@ -14,7 +14,6 @@ st.set_page_config(page_title="Pharma Brand Planner", layout="wide")
 def load_data():
     xls = pd.ExcelFile("SI Tool.xlsx")
     tab1 = xls.parse('Tab 1')
-    tab1.columns = tab1.columns.str.strip().str.replace(r'\\n|\\r|\\t', '', regex=True)
     tab2 = xls.parse('Tab 2')
     tab3 = xls.parse('Tab 3')
     tab4 = xls.parse('Tab 4')
@@ -26,16 +25,15 @@ tab1, tab2, tab3, tab4 = load_data()
 st.sidebar.title("Brand Planning Tool")
 st.header("Step 1: Select Where You Are in the Product Lifecycle")
 
-product_lifecycle_options = [col.strip() for col in tab1.columns[1:] if pd.notna(col)]
+product_lifecycle_options = list(tab1.iloc[0, 1:].dropna())
 product_lifecycle = st.radio("Choose one:", product_lifecycle_options)
 
 # === STEP 2: Select Strategic Imperatives ===
 st.header("Step 2: Select Strategic Imperatives")
-lifecycle_col_idx = tab1.columns.get_loc(product_lifecycle)
+selected_col_idx = tab1.iloc[0].tolist().index(product_lifecycle)
 strategic_rows = tab1.iloc[1:]
-strategic_rows.columns = tab1.iloc[0]
-filtered_si = strategic_rows[strategic_rows[product_lifecycle] == 'x']['Strategic Imperatives'].dropna()
-selected_si = st.multiselect("Choose relevant imperatives:", filtered_si.tolist())
+strategic_imperatives = strategic_rows[strategic_rows.iloc[:, selected_col_idx] == 'x']["Strategic Imperatives"].dropna().tolist()
+selected_si = st.multiselect("Choose relevant imperatives:", strategic_imperatives)
 
 # === STEP 3: Product Differentiators ===
 st.header("Step 3: Select Product Differentiators")
