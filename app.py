@@ -86,16 +86,14 @@ for si in selected_si:
                     est_time = "4–6 weeks"
                     est_cost = "$15,000–$25,000"
 
-                    output_df = pd.concat([
-                        output_df,
-                        pd.DataFrame([{
+                    row_df = pd.DataFrame([{
                             "Strategic Imperative": si,
                             "Tactic": tactic,
                             "AI Description": desc,
                             "Est. Timing": est_time,
                             "Est. Cost": est_cost
                         }])
-                    ])
+                        output_df = pd.concat([output_df, row_df], ignore_index=True)
 
                 if pd.isna(tactic):
                     continue
@@ -117,16 +115,14 @@ for si in selected_si:
                 est_time = "4–6 weeks"
                 est_cost = "$15,000–$25,000"
 
-                output_df = pd.concat([
-                    output_df,
-                    pd.DataFrame([{
-                        "Strategic Imperative": si,
-                        "Tactic": tactic,
-                        "AI Description": desc,
-                        "Est. Timing": est_time,
-                        "Est. Cost": est_cost
-                    }])
-                ])
+                row_df = pd.DataFrame([{
+                            "Strategic Imperative": si,
+                            "Tactic": tactic,
+                            "AI Description": desc,
+                            "Est. Timing": est_time,
+                            "Est. Cost": est_cost
+                        }])
+                        output_df = pd.concat([output_df, row_df], ignore_index=True)
 
     if output_df.empty:
         st.warning("No tactics were found based on your selected imperatives and objectives.")
