@@ -146,7 +146,7 @@ for si in selected_si:
             ideas = response['choices'][0]['message']['content']
             st.markdown(ideas)
         except Exception as e:
-            st.error(f"Message generation failed: {e}")}.
+            st.error(f"Message generation failed: {e}")
     """
     try:
         response2 = openai.ChatCompletion.create(
