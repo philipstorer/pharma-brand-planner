@@ -50,7 +50,7 @@ selected_tone = st.multiselect("Choose brand tone(s):", brand_tones)
 # === STEP 5: Select Strategic Objective ===
 st.header("Step 5: Select Strategic Objective")
 objectives = tab4.columns[1:].tolist()
-selected_objective = st.selectbox("What is your primary objective?", objectives)
+selected_objectives = st.multiselect("Select your strategic objectives:", objectives)
 
 # === STEP 6: Generate Tactics ===
 if st.button("Generate Tactics Plan"):
@@ -60,8 +60,10 @@ if st.button("Generate Tactics Plan"):
     for si in selected_si:
         matches = tab4[tab4['Strategic Challenge'] == si]
         if not matches.empty:
-            tactics = matches[selected_objective].dropna().tolist()
-            for tactic in tactics:
+            for obj in selected_objectives:
+                if obj in matches.columns:
+                    tactics = matches[obj].dropna().tolist()
+                    for tactic in tactics:
                 if pd.isna(tactic):
                     continue
 
@@ -76,8 +78,8 @@ if st.button("Generate Tactics Plan"):
                         temperature=0.6
                     )
                     desc = response['choices'][0]['message']['content']
-                except:
-                    desc = "AI description not available."
+                except Exception as e:
+                    desc = f"AI description not available: {e}"
 
                 est_time = "4–6 weeks"
                 est_cost = "$15,000–$25,000"
@@ -111,8 +113,8 @@ if st.button("Generate Tactics Plan"):
         )
         ideas = response['choices'][0]['message']['content']
         st.markdown(ideas)
-    except:
-        st.error("Message generation failed.")
+    except Exception as e:
+        st.error(f"Message generation failed: {e}")
 
     # === STEP 8: Campaign Concept ===
     st.subheader("Campaign Concept")
@@ -126,8 +128,8 @@ if st.button("Generate Tactics Plan"):
             temperature=0.7
         )
         st.markdown(response2['choices'][0]['message']['content'])
-    except:
-        st.error("Campaign concept generation failed.")
+    except Exception as e:
+        st.error(f"Campaign concept generation failed: {e}")
 
     # === STEP 9: Competitive Insights ===
     st.subheader("Competitive Intelligence")
