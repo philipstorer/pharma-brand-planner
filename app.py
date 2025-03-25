@@ -58,12 +58,42 @@ if st.button("Generate Tactics Plan"):
     output_df = pd.DataFrame()
 
     for si in selected_si:
-        matches = tab4[tab4['Strategic Challenge'] == si]
-        if not matches.empty:
-            for obj in selected_objectives:
-                if obj in matches.columns:
-                    tactics = matches[obj].dropna().tolist()
-                    for tactic in tactics:
+    matches = tab4[tab4['Strategic Challenge'] == si]
+    if not matches.empty:
+        for obj in selected_objectives:
+            if obj in matches.columns:
+                tactics = matches[obj].dropna().tolist()
+                for tactic in tactics:
+                    if pd.isna(tactic):
+                        continue
+
+                    # AI prompt to describe tactic
+                    prompt = f"""
+                    You are a pharmaceutical marketing strategist. Write a short 3-4 sentence rationale describing why the following tactic: '{tactic}' aligns with the selected strategic imperative: '{si}', the differentiator(s): {', '.join(selected_diff)}, and the tone(s): {', '.join(selected_tone)}.
+                    """
+                    try:
+                        response = openai.ChatCompletion.create(
+                            model="gpt-4",
+                            messages=[{"role": "user", "content": prompt}],
+                            temperature=0.6
+                        )
+                        desc = response['choices'][0]['message']['content']
+                    except Exception as e:
+                        desc = f"AI description not available: {e}"
+
+                    est_time = "4–6 weeks"
+                    est_cost = "$15,000–$25,000"
+
+                    output_df = pd.concat([
+                        output_df,
+                        pd.DataFrame([{
+                            "Strategic Imperative": si,
+                            "Tactic": tactic,
+                            "AI Description": desc,
+                            "Est. Timing": est_time,
+                            "Est. Cost": est_cost
+                        }])
+                    ])
                 if pd.isna(tactic):
                     continue
 
