@@ -130,28 +130,27 @@ for si in selected_si:
         st.dataframe(output_df)
 
     # === STEP 7: Messaging Ideas ===
-    st.subheader("5 Key Messaging Ideas")
-    msg_prompt = f"""
-    Based on the strategic imperatives: {', '.join(selected_si)},
-    product differentiators: {', '.join(selected_diff)},
-    and tone: {', '.join(selected_tone)},
-    generate 5 pharma marketing message ideas.
-    """
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": msg_prompt}],
-            temperature=0.7
-        )
-        ideas = response['choices'][0]['message']['content']
-        st.markdown(ideas)
-    except Exception as e:
-        st.error(f"Message generation failed: {e}")
+        st.subheader("5 Key Messaging Ideas")
 
-    # === STEP 8: Campaign Concept ===
-    st.subheader("Campaign Concept")
-    concept_prompt = f"""
-    Create a pharma campaign concept with a headline and subhead. The strategy should include: {', '.join(selected_si)}. Emphasize the differentiator(s): {', '.join(selected_diff)} and tone: {', '.join(selected_tone)}.
+    if not selected_si or not selected_diff or not selected_tone:
+        st.warning("Please make sure you've selected strategic imperatives, differentiators, and tone before generating messaging ideas.")
+    else:
+        msg_prompt = f"""
+        Based on the strategic imperatives: {', '.join(selected_si)},
+        product differentiators: {', '.join(selected_diff)},
+        and tone: {', '.join(selected_tone)},
+        generate 5 pharma marketing message ideas.
+        """
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-4",
+                messages=[{"role": "user", "content": msg_prompt}],
+                temperature=0.7
+            )
+            ideas = response['choices'][0]['message']['content']
+            st.markdown(ideas)
+        except Exception as e:
+            st.error(f"Message generation failed: {e}")}.
     """
     try:
         response2 = openai.ChatCompletion.create(
