@@ -3,6 +3,8 @@ import pandas as pd
 import openai
 import requests
 from bs4 import BeautifulSoup
+import time
+from openai import RateLimitError
 
 # === CONFIG ===
 openai.api_key = st.secrets["OPENAI_API_KEY"]
@@ -81,7 +83,7 @@ if st.button("Generate Tactics Plan"):
                         except Exception as e:
                             desc = f"AI description not available: {e}"
 
-                                                                        # Generate estimates for time and cost
+                                                                                                # Generate estimates for time and cost
                         estimate_prompt = f"Estimate the typical time and cost for executing this pharma marketing tactic: '{tactic}'. Provide a 1-line answer like 'Timeline: 6–8 weeks, Cost: $20,000–$35,000'."
 
                         try:
@@ -90,6 +92,18 @@ if st.button("Generate Tactics Plan"):
                                 messages=[{"role": "user", "content": estimate_prompt}],
                                 temperature=0.5
                             )
+                        except RateLimitError:
+                            time.sleep(1)
+                            try:
+                                est_response = openai.chat.completions.create(
+                                    model="gpt-3.5-turbo",
+                                    messages=[{"role": "user", "content": estimate_prompt}],
+                                    temperature=0.5
+                                )
+                            except RateLimitError:
+                                est_time = "Rate limit hit"
+                                est_cost = "Try again later"
+                                continue
                         except Exception:
                             est_response = openai.chat.completions.create(
                                 model="gpt-3.5-turbo",
@@ -102,6 +116,10 @@ if st.button("Generate Tactics Plan"):
                             est_time, est_cost = estimate.split(", ")
                             est_time = est_time.replace("Timeline: ", "")
                             est_cost = est_cost.replace("Cost: ", "")
+                        except Exception as e:
+                            est_time = "TBD"
+                            est_cost = f"Estimation failed: {e}"
+
                         except Exception as e:
                             est_time = "TBD"
                             est_cost = f"Estimation failed: {e}"
