@@ -132,11 +132,11 @@ for si in selected_si:
         st.warning("Please make sure you've selected strategic imperatives, differentiators, and tone before generating messaging ideas.")
     else:
         msg_prompt = f"""
-        Based on the strategic imperatives: {', '.join(selected_si)},
-        product differentiators: {', '.join(selected_diff)},
-        and tone: {', '.join(selected_tone)},
-        generate 5 pharma marketing message ideas.
-        """
+Based on the strategic imperatives: {", ".join(selected_si)},
+product differentiators: {", ".join(selected_diff)},
+and tone: {", ".join(selected_tone)},
+generate 5 pharma marketing message ideas.
+"""
         try:
             response = openai.ChatCompletion.create(
                 model="gpt-4",
